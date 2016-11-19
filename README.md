@@ -2,7 +2,8 @@
 
 Control light sequence of a Neopixel strip using a Tessel in response to events sent over the network.
 
-http://jullunch.athega.se/
+[![Tessel + Neopixel + EventSource](https://img.youtube.com/vi/NPh-ysGa16k/maxresdefault.jpg)](https://www.youtube.com/watch?v=NPh-ysGa16k)
+
 
 ## Prerequisites
 
