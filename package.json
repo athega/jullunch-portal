@@ -1,0 +1,23 @@
+{
+  "name": "jullunch-portal",
+  "version": "1.0.0",
+  "description": "Light controller for entry portal at athega jullunch.",
+  "main": "portal.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/athega/jullunch-portal.git"
+  },
+  "author": "Athega: Johan, Chrille, Mats, Tobbe.",
+  "bugs": {
+    "url": "https://github.com/athega/jullunch-portal/issues"
+  },
+  "homepage": "http://jullunch.athega.se/",
+  "devDependencies": {
+    "eventsource": "^0.2.1",
+    "npx": "git+https://github.com/lizell/npx.git",
+    "tessel": "^0.3.25"
+  }
+}
