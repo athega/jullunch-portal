@@ -26,9 +26,8 @@ console.log('Creating pulse');
 var pulseStepDuration = 3,
     steps = 50;
 
-function addColor(i) {
-    var color = '#0000' + (i < 16 ? '0' : '') + i.toString(16);
-    npx.enqueue(npx.newAnimation(1).setAll(color), pulseStepDuration);
+function addColor(blue) {
+    npx.enqueue(npx.newAnimation(1).setAll([0, 0, blue]), pulseStepDuration);
 }
 
 for (var i = 0; i < steps; i++) addColor(i);
@@ -42,14 +41,14 @@ var flashDuration = 500,
     flickerDuration = 10,
     flickerDelay = 10,
     flickerPause = 50,
-    red    = npx2.newAnimation(1).setAll('#ff0000'),
-    blue   = npx2.newAnimation(1).setAll('#0000ff'),
-    green  = npx2.newAnimation(1).setAll('#00ff00'),
-    yellow = npx2.newAnimation(1).setAll('#ffff00'),
-    purple = npx2.newAnimation(1).setAll('#ff00ff'),
-    cyan   = npx2.newAnimation(1).setAll('#00ffff'),
-    white  = npx2.newAnimation(1).setAll('#ffffff'),
-    black  = npx2.newAnimation(1).setAll('#000000'),
+    red    = npx2.newAnimation(1).setAll([255, 0, 0]),
+    green  = npx2.newAnimation(1).setAll([0, 255, 0]),
+    blue   = npx2.newAnimation(1).setAll([0, 0, 255]),
+    yellow = npx2.newAnimation(1).setAll([255, 255, 0]),
+    purple = npx2.newAnimation(1).setAll([255, 0, 255]),
+    cyan   = npx2.newAnimation(1).setAll([0, 255, 255]),
+    white  = npx2.newAnimation(1).setAll([255, 255, 255]),
+    black  = npx2.newAnimation(1).setAll([0, 0, 0]),
     colors = [red, green, blue, yellow, purple, cyan];
 
 npx2.enqueue(white, flashDuration)
