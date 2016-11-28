@@ -22,9 +22,16 @@ Checkout
 
 `git clone https://github.com/athega/jullunch-portal.git`
 
-Install dependencies, which are **tessel**, [**lizell/npx**](https://github.com/lizell/npx), and **eventsource**.
+Install development dependencies. (**tessel**)
 
 `npm install`
+
+Install runtime dependencies. (**eventsource**)
+
+`cd src/`
+
+`npm install`
+
 
 ### Connect to WiFi
 
@@ -35,8 +42,8 @@ Install dependencies, which are **tessel**, [**lizell/npx**](https://github.com/
 
 Run script while tessel is connected via USB:
 
-`./node_modules/.bin/tessel run portal.js`
+`./node_modules/.bin/tessel run src/portal.js`
 
 Install script in memory on device:
 
-`./node_modules/.bin/tessel push portal.js`
+`./node_modules/.bin/tessel push src/portal.js`

@@ -16,8 +16,6 @@
   },
   "homepage": "http://jullunch.athega.se/",
   "devDependencies": {
-    "eventsource": "^0.2.1",
-    "npx": "git+https://github.com/lizell/npx.git",
     "tessel": "^0.3.25"
   }
 }
