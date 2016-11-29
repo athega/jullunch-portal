@@ -3,11 +3,10 @@ var hw = process.binding('hw'),
     tessel = require('tessel'),
     eventURL = 'http://10.0.0.74/stream', // Use HTTP for testing, there might be a problem with using HTTPS.
 //    eventURL = 'https://jullunch-backend.athega.se/stream',
-    eventName = 'jullunch.check-in';
+    eventName = 'jullunch.check-in',
+    pixels = 60 * 5; // Number of neopixels connected
 
 
-console.log('Initializing buffers');
-var buffers = require('./buffers');
 
 // Show status using build-in LED:s
 var led1 = tessel.led[0].output(1),
@@ -17,8 +16,15 @@ var led1 = tessel.led[0].output(1),
 // Generate pulse sequence
 console.log('Creating pulse');
 var pulse = {
-        frames: buffers.pulse,
+        frames: [],
         frame: 0,
+        length: 188,
+        done: function() {
+            console.log('Looping pulse');
+            // Toggle build in LED:s to indicate status
+            led1.toggle();
+            led2.toggle();
+        }
     },
     animation = pulse;
 
@@ -26,8 +32,9 @@ var pulse = {
 // Generate flash sequence
 console.log('Creating flash');
 var flash = {
-        frames: buffers.flash,
+        frames: [],
         frame: 0,
+        length: 60,
         done: function() {
             console.log('Resuming pulse');
             // Toggle build in LED:s to indicate status
@@ -37,6 +44,22 @@ var flash = {
             animation = pulse;
         }
     };
+
+
+// Reading buffers from binary file.
+console.log('Reading buffers from file');
+var fs = require('fs'),
+    file = fs.readFileSync('frames.data');
+
+function readFrames(frames, count) {
+    for (var i = 0; i < count; i++) {
+        var offset = i * (pixels * 3 + 2),
+            delay = file[offset] * 256 + file[offset + 1];
+        frames.push([file.slice(offset + 2, offset + 2 + pixels * 3), delay]);
+    }
+}
+readFrames(pulse.frames, pulse.length);
+readFrames(flash.frames, flash.length);
 
 
 // Run animation loop
