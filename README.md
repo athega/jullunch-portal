@@ -47,3 +47,9 @@ Run script while tessel is connected via USB:
 Install script in memory on device:
 
 `./node_modules/.bin/tessel push src/portal.js`
+
+## Simulator
+
+Web version using Canvas:
+
+https://athega.github.io/jullunch-portal/

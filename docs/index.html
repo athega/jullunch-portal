@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <style>
+            body > canvas {
+                width: 1200px;
+                max-width: 100%;
+                height: 6px;
+                border: 2px solid black;
+            }
+        </style>
+    </head>
+    <body>
+
+    <canvas width="1200" height="1" id="canvas"></canvas>
+
+<script>
+'use strict';
+var canvas = document.getElementById('canvas'),
+    width = canvas.width,
+    height = canvas.height,
+    ctx = canvas.getContext('2d'),
+    pulse = {
+        frames: [],
+        frame: 0,
+        length: 188,
+        duration: 40,
+    },
+    animation = pulse;
+
+// Generate pulse sequence
+for (var t = 0; t < pulse.length; t++) {
+    var imageData = ctx.createImageData(width, height),
+        buffer = imageData.data;
+
+    var pr = t / 60,
+        or = 0.009,
+        pg = -t / 60,
+        og = 0.009,
+        pb = t / 30,
+        ob = 0.005;
+
+    for (var x = 0; x < buffer.length; x += 16) {
+        buffer[x+ 8] = buffer[x+4] = buffer[x+0] = Math.pow(Math.abs(Math.sin(pr += or)), 128) * 255;
+        buffer[x+ 9] = buffer[x+5] = buffer[x+1] = Math.pow(Math.abs(Math.sin(pg += og)), 128) * 255;
+        buffer[x+10] = buffer[x+6] = buffer[x+2] =          Math.abs(Math.sin(pb += ob))       * 255;
+        buffer[x+15] = buffer[x+11] = buffer[x+7] = buffer[x+3] = 255;
+    }
+
+    pulse.frames.push([imageData, pulse.duration]);
+}
+
+
+
+// Generate flash sequence
+function getBuffer(color) {
+    var imageData = ctx.createImageData(width, height),
+        buffer = imageData.data;
+
+    for (var x = 0; x < buffer.length; x += 16) {
+        buffer[x+ 8] = buffer[x+4] = buffer[x+0] = color[0];
+        buffer[x+ 9] = buffer[x+5] = buffer[x+1] = color[1];
+        buffer[x+10] = buffer[x+6] = buffer[x+2] = color[2];
+        buffer[x+15] = buffer[x+11] = buffer[x+7] = buffer[x+3] = 255;
+    }
+
+    return imageData;
+}
+
+var red    = getBuffer([255, 0, 0]),
+    green  = getBuffer([0, 255, 0]),
+    blue   = getBuffer([0, 0, 255]),
+    yellow = getBuffer([255, 255, 0]),
+    purple = getBuffer([255, 0, 255]),
+    cyan   = getBuffer([0, 255, 255]),
+    white  = getBuffer([255, 255, 255]),
+    black  = getBuffer([0, 0, 0]),
+    colors = [red, green, blue, yellow, purple, cyan],
+    flash = {
+        frames: [],
+        frame: 0,
+        flashDuration: 500,
+        flashPause: 500,
+        flickerDuration: 10,
+        flickerDelay: 10,
+        flickerPause: 50,
+        done: function() {
+            animation = pulse;
+        }
+    };
+
+flash.frames.push(
+    [white, flash.flashDuration],
+    [black, flash.flashPause],
+    [white, flash.flashDuration],
+    [black, flash.flashPause]
+);
+
+for (var i = 0; i < colors.length; i++) {
+    for (var n = 0; n < 4; n++) {
+        flash.frames.push([colors[i], flash.flickerDuration], [black, flash.flickerDelay]);
+    }
+    flash.frames.push([black, flash.flickerPause]);
+}
+
+flash.frames.push([white, flash.flashDuration * 2], [black, flash.flashPause]);
+
+
+
+// Run animation loop
+(function updateAnimationFrame() {
+    var frame = animation.frames[animation.frame],
+        buffer = frame[0],
+        delay = frame[1];
+    ctx.putImageData(buffer, 0, 0);
+    setTimeout(updateAnimationFrame, delay);
+
+    if (++animation.frame >= animation.frames.length) {
+        animation.frame = 0;
+        if (animation.done) animation.done();
+    }
+})();
+
+
+// Trigger flash on check in event.
+var eventSourceURL = 'https://jullunch-backend.athega.se/stream',
+    eventSource = new EventSource(eventSourceURL);
+
+eventSource.addEventListener("jullunch.check-in", function(event) {
+    animation = flash;
+});
+
+</script>
+    </body>
+</html>
