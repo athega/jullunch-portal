@@ -9,20 +9,28 @@
                 height: 6px;
                 border: 2px solid black;
             }
+            textarea {
+                width: 60em;
+                max-width: 100%;
+                height: 60em;
+            }
         </style>
     </head>
     <body>
 
     <canvas width="1200" height="1" id="canvas"></canvas>
 
+    <textarea id="output" readonly></textarea>
 <script>
 'use strict';
 var canvas = document.getElementById('canvas'),
     width = canvas.width,
     height = canvas.height,
     ctx = canvas.getContext('2d'),
+    pixels = 300,
     pulse = {
         frames: [],
+        buffers: [],
         frame: 0,
         length: 188,
         duration: 40,
@@ -32,23 +40,27 @@ var canvas = document.getElementById('canvas'),
 // Generate pulse sequence
 for (var t = 0; t < pulse.length; t++) {
     var imageData = ctx.createImageData(width, height),
-        buffer = imageData.data;
+        img = imageData.data,
+        buffer = new Uint8Array(pixels * 3);
 
     var pr = t / 60,
         or = 0.009,
         pg = -t / 60,
         og = 0.009,
-        pb = t / 30,
+        pb = t / 15,
         ob = 0.005;
 
-    for (var x = 0; x < buffer.length; x += 16) {
-        buffer[x+ 8] = buffer[x+4] = buffer[x+0] = Math.pow(Math.abs(Math.sin(pr += or)), 128) * 255;
-        buffer[x+ 9] = buffer[x+5] = buffer[x+1] = Math.pow(Math.abs(Math.sin(pg += og)), 128) * 255;
-        buffer[x+10] = buffer[x+6] = buffer[x+2] =          Math.abs(Math.sin(pb += ob))       * 255;
-        buffer[x+15] = buffer[x+11] = buffer[x+7] = buffer[x+3] = 255;
+    for (var x = 0; x < pixels; x++) {
+        var i = x * 16,
+            b = x * 3;
+        buffer[b+1] = img[i+ 8] = img[i+4] = img[i+0] = Math.pow(Math.abs(Math.sin(pr += or)), 256) * 255;
+        buffer[b+0] = img[i+ 9] = img[i+5] = img[i+1] = Math.pow(Math.abs(Math.sin(pg += og)), 256) * 255;
+        buffer[b+2] = img[i+10] = img[i+6] = img[i+2] =                   Math.sin(pb += ob) * 127 + 128;
+        img[i+15] = img[i+11] = img[i+7] = img[i+3] = 255;
     }
 
     pulse.frames.push([imageData, pulse.duration]);
+    pulse.buffers.push(buffer);
 }
 
 
@@ -56,16 +68,22 @@ for (var t = 0; t < pulse.length; t++) {
 // Generate flash sequence
 function getBuffer(color) {
     var imageData = ctx.createImageData(width, height),
-        buffer = imageData.data;
+        img = imageData.data,
+        buffer = new Uint8Array(pixels * 3);
 
-    for (var x = 0; x < buffer.length; x += 16) {
-        buffer[x+ 8] = buffer[x+4] = buffer[x+0] = color[0];
-        buffer[x+ 9] = buffer[x+5] = buffer[x+1] = color[1];
-        buffer[x+10] = buffer[x+6] = buffer[x+2] = color[2];
-        buffer[x+15] = buffer[x+11] = buffer[x+7] = buffer[x+3] = 255;
+    for (var x = 0; x < pixels; x++) {
+        var i = x * 16,
+            b = x * 3;
+        buffer[b+1] = img[i+ 8] = img[i+4] = img[i+0] = color[0];
+        buffer[b+0] = img[i+ 9] = img[i+5] = img[i+1] = color[1];
+        buffer[b+2] = img[i+10] = img[i+6] = img[i+2] = color[2];
+        img[i+15] = img[i+11] = img[i+7] = img[i+3] = 255;
     }
 
-    return imageData;
+    return {
+        image: imageData,
+        buffer: buffer
+    }
 }
 
 var red    = getBuffer([255, 0, 0]),
@@ -79,6 +97,7 @@ var red    = getBuffer([255, 0, 0]),
     colors = [red, green, blue, yellow, purple, cyan],
     flash = {
         frames: [],
+        buffers: [],
         frame: 0,
         flashDuration: 500,
         flashPause: 500,
@@ -91,20 +110,30 @@ var red    = getBuffer([255, 0, 0]),
     };
 
 flash.frames.push(
-    [white, flash.flashDuration],
-    [black, flash.flashPause],
-    [white, flash.flashDuration],
-    [black, flash.flashPause]
+    [white.image, flash.flashDuration],
+    [black.image, flash.flashPause],
+    [white.image, flash.flashDuration],
+    [black.image, flash.flashPause]
+);
+
+flash.buffers.push(
+    white.buffer,
+    black.buffer,
+    white.buffer,
+    black.buffer
 );
 
 for (var i = 0; i < colors.length; i++) {
     for (var n = 0; n < 4; n++) {
-        flash.frames.push([colors[i], flash.flickerDuration], [black, flash.flickerDelay]);
+        flash.frames.push([colors[i].image, flash.flickerDuration], [black.image, flash.flickerDelay]);
+        flash.buffers.push(colors[i].buffer, black.buffer);
     }
-    flash.frames.push([black, flash.flickerPause]);
+    flash.frames.push([black.image, flash.flickerPause]);
+    flash.buffers.push(black.buffer);
 }
 
-flash.frames.push([white, flash.flashDuration * 2], [black, flash.flashPause]);
+flash.frames.push([white.image, flash.flashDuration * 2], [black.image, flash.flashPause]);
+flash.buffers.push(white.buffer, black.buffer);
 
 
 
@@ -130,6 +159,26 @@ var eventSourceURL = 'https://jullunch-backend.athega.se/stream',
 eventSource.addEventListener("jullunch.check-in", function(event) {
     animation = flash;
 });
+
+
+// Generate source code for buffers.
+var output = document.getElementById('output'),
+    anims = {pulse: pulse, flash: flash};
+output.value = 'module.exports = {\n';
+for (var name in anims) {
+    output.value += name + ': [\n';
+    for (var i = 0; i < anims[name].frames.length; i++) {
+        var buffer = anims[name].buffers[i],
+            delay = anims[name].frames[i][1];
+//        output.value += '["' + btoa(String.fromCharCode.apply(null, buffer)) + '", ' + delay + '],\n';
+        output.value += '[new Buffer([' + Array.from(buffer) + ']), ' + delay + '],\n';
+    }
+//    output.value += '].map(function(frame) { return [new Buffer(frame[0], "base64"), frame[1]]; }),\n';
+    output.value += '],\n';
+}
+output.value += '};\n';
+
+
 
 </script>
     </body>
