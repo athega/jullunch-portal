@@ -6,6 +6,7 @@ var hw = process.binding('hw'),
     eventName = 'jullunch.check-in',
     pixels = 60 * 5; // Number of neopixels connected
 
+console.log('Initializing, v.', 20161130.1400);
 
 
 // Show status using build-in LED:s
@@ -35,6 +36,14 @@ var flash = {
         frames: [],
         frame: 0,
         length: 60,
+        play: function(event) {
+            console.log('Flash!');
+            // Toggle build in LED:s to indicate status
+            led1.toggle();
+            led2.toggle();
+
+            animation = flash;
+        },
         done: function() {
             console.log('Resuming pulse');
             // Toggle build in LED:s to indicate status
@@ -80,14 +89,10 @@ readFrames(flash.frames, flash.length);
 console.log('Running...');
 
 
+// Trigger flash on config button press.
+tessel.button.on('press', flash.play);
+
 // Trigger flash on check in event.
 var eventSource = new EventSource(eventURL, { rejectUnauthorized: false });
-eventSource.addEventListener(eventName, function(event) {
-    console.log('Flash!');
-    // Toggle build in LED:s to indicate status
-    led1.toggle();
-    led2.toggle();
-
-    animation = flash;
-});
+eventSource.addEventListener(eventName, flash.play);
 console.log('Listening to "'+ eventName + '" from ' + eventURL);
