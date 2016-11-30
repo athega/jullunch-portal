@@ -6,7 +6,7 @@ var hw = process.binding('hw'),
     eventName = 'jullunch.check-in',
     pixels = 60 * 5; // Number of neopixels connected
 
-console.log('Initializing, v.', 20161130.1400);
+console.log('Initializing, v.', 20161130.1417);
 
 
 // Show status using build-in LED:s
@@ -17,6 +17,7 @@ var led1 = tessel.led[0].output(1),
 // Generate pulse sequence
 console.log('Creating pulse');
 var pulse = {
+        name: 'pulse',
         frames: [],
         frame: 0,
         length: 188,
@@ -33,6 +34,7 @@ var pulse = {
 // Generate flash sequence
 console.log('Creating flash');
 var flash = {
+        name: 'flash',
         frames: [],
         frame: 0,
         length: 60,
@@ -58,13 +60,15 @@ var flash = {
 // Reading buffers from binary file.
 console.log('Reading buffers from file');
 var fs = require('fs'),
-    file = fs.readFileSync('frames.data');
+    file = fs.readFileSync('frames.data'),
+    offset = 0;
 
 function readFrames(frames, count) {
     for (var i = 0; i < count; i++) {
-        var offset = i * (pixels * 3 + 2),
-            delay = file[offset] * 256 + file[offset + 1];
-        frames.push([file.slice(offset + 2, offset + 2 + pixels * 3), delay]);
+        var delay = file[offset++] * 256 + file[offset++],
+            end = offset + pixels * 3;
+        frames.push([file.slice(offset, end), delay]);
+        offset = end;
     }
 }
 readFrames(pulse.frames, pulse.length);
@@ -76,6 +80,8 @@ readFrames(flash.frames, flash.length);
     var frame = animation.frames[animation.frame],
         buffer = frame[0],
         delay = frame[1];
+
+//    console.log('Playing', animation.name, 'frame', animation.frame, 'delay', delay, 'buffer', buffer);
 
     hw.neopixel_animation_buffer(buffer.length, buffer);
 
