@@ -4,7 +4,7 @@ var hw = process.binding('hw'),
     eventURL = 'http://10.0.0.74/stream', // Use HTTP for testing, there might be a problem with using HTTPS.
 //    eventURL = 'https://jullunch-backend.athega.se/stream',
     eventName = 'jullunch.check-in',
-    pixels = 299, // Number of neopixels connected
+    pixels = 299 + 24 + 12, // Number of neopixels connected
     debug = false;
 
 if (debug) console.log('Initializing, v.', 20161202.1523);
