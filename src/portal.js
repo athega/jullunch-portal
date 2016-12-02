@@ -4,9 +4,10 @@ var hw = process.binding('hw'),
     eventURL = 'http://10.0.0.74/stream', // Use HTTP for testing, there might be a problem with using HTTPS.
 //    eventURL = 'https://jullunch-backend.athega.se/stream',
     eventName = 'jullunch.check-in',
-    pixels = 60 * 5; // Number of neopixels connected
+    pixels = 299, // Number of neopixels connected
+    debug = false;
 
-console.log('Initializing, v.', 20161130.1417);
+if (debug) console.log('Initializing, v.', 20161202.1523);
 
 
 // Show status using build-in LED:s
@@ -15,14 +16,14 @@ var led1 = tessel.led[0].output(1),
 
 
 // Generate pulse sequence
-console.log('Creating pulse');
+if (debug) console.log('Creating pulse');
 var pulse = {
         name: 'pulse',
         frames: [],
         frame: 0,
         length: 188,
         done: function() {
-            console.log('Looping pulse');
+            if (debug) console.log('Looping pulse');
             // Toggle build in LED:s to indicate status
             led1.toggle();
             led2.toggle();
@@ -32,14 +33,14 @@ var pulse = {
 
 
 // Generate flash sequence
-console.log('Creating flash');
+if (debug) console.log('Creating flash');
 var flash = {
         name: 'flash',
         frames: [],
         frame: 0,
         length: 60,
         play: function(event) {
-            console.log('Flash!');
+            if (debug) console.log('Flash!');
             // Toggle build in LED:s to indicate status
             led1.toggle();
             led2.toggle();
@@ -47,7 +48,7 @@ var flash = {
             animation = flash;
         },
         done: function() {
-            console.log('Resuming pulse');
+            if (debug) console.log('Resuming pulse');
             // Toggle build in LED:s to indicate status
             led1.toggle();
             led2.toggle();
@@ -58,7 +59,7 @@ var flash = {
 
 
 // Reading buffers from binary file.
-console.log('Reading buffers from file');
+if (debug) console.log('Reading buffers from file');
 var fs = require('fs'),
     file = fs.readFileSync('frames.data'),
     offset = 0;
@@ -81,7 +82,7 @@ readFrames(flash.frames, flash.length);
         buffer = frame[0],
         delay = frame[1];
 
-//    console.log('Playing', animation.name, 'frame', animation.frame, 'delay', delay, 'buffer', buffer);
+//    if (debug) console.log('Playing', animation.name, 'frame', animation.frame, 'delay', delay, 'buffer', buffer);
 
     hw.neopixel_animation_buffer(buffer.length, buffer);
 
@@ -92,7 +93,7 @@ readFrames(flash.frames, flash.length);
         if (animation.done) animation.done();
     }
 })();
-console.log('Running...');
+if (debug) console.log('Running...');
 
 
 // Trigger flash on config button press.
@@ -101,4 +102,4 @@ tessel.button.on('press', flash.play);
 // Trigger flash on check in event.
 var eventSource = new EventSource(eventURL, { rejectUnauthorized: false });
 eventSource.addEventListener(eventName, flash.play);
-console.log('Listening to "'+ eventName + '" from ' + eventURL);
+if (debug) console.log('Listening to "'+ eventName + '" from ' + eventURL);
