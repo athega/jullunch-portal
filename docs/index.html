@@ -125,7 +125,7 @@ function getBuffer(color) {
         img = imageData.data,
         buffer = new Uint8Array(pixelsTotal * 3);
 
-    for (var x = 0; x < pixelsStrip; x++) {
+    for (var x = 0; x < pixelsStrip + pixelsRing1 + pixelsRing2; x++) {
         var i = x * 16,
             b = x * 3;
         buffer[b+1] = img[i+ 8] = img[i+4] = img[i+0] = color[0];
@@ -155,9 +155,9 @@ var red    = getBuffer([255, 0, 0]),
         frame: 0,
         flashDuration: 500,
         flashPause: 500,
-        flickerDuration: 20,
-        flickerDelay: 20,
-        flickerPause: 50,
+        flickerDuration: 60,
+        flickerDelay: 60,
+        flickerPause: 200,
         done: function() {
             animation = pulse;
         }
@@ -178,7 +178,7 @@ flash.buffers.push(
 );
 
 for (var i = 0; i < colors.length; i++) {
-    for (var n = 0; n < 4; n++) {
+    for (var n = 0; n < 2; n++) {
         flash.frames.push([colors[i].image, flash.flickerDuration], [black.image, flash.flickerDelay]);
         flash.buffers.push(colors[i].buffer, black.buffer);
     }
