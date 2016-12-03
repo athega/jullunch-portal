@@ -4,10 +4,14 @@
         <meta charset="utf-8">
         <style>
             body > canvas {
-                width: 1200px;
-                max-width: 100%;
-                height: 6px;
+                width: 100%;
                 border: 2px solid black;
+            }
+            body > #canvas1 {
+                height: 6px;
+            }
+            body > #canvas2 {
+                height: 256px;
             }
             textarea {
                 width: 60em;
@@ -18,8 +22,8 @@
     </head>
     <body>
 
-    <canvas width="1200" height="1" id="canvas"></canvas>
-
+    <canvas id="canvas1"></canvas>
+    <canvas id="canvas2"></canvas>
     <textarea id="output" readonly></textarea>
 <script>
 'use strict';
@@ -27,10 +31,10 @@ var pixelsStrip = 299,
     pixelsRing1 = 24,
     pixelsRing2 = 12,
     pixelsTotal = pixelsStrip + pixelsRing1 + pixelsRing2,
-    canvas = document.getElementById('canvas'),
-    width = canvas.width = pixelsTotal * 4,
-    height = canvas.height,
-    ctx = canvas.getContext('2d'),
+    canvas1 = document.getElementById('canvas1'),
+    width = canvas1.width = pixelsTotal * 4,
+    height = canvas1.height = 1,
+    ctx = canvas1.getContext('2d'),
     pulse = {
         frames: [],
         buffers: [],
@@ -163,6 +167,32 @@ flash.frames.push([white.image, flash.flashDuration * 2], [black.image, flash.fl
 flash.buffers.push(white.buffer, black.buffer);
 
 
+// Visualize waveform
+var canvas2 = document.getElementById('canvas2'),
+    width2 = canvas2.width = pixelsTotal,
+    height2 = canvas2.height = 256,
+    ctx2 = canvas2.getContext('2d');
+
+ctx2.fillStyle = 'black';
+
+function verticalLine(imageData, x, height, colorOffset) {
+    for (var y = height2 - height - 1; y < height2; y++) {
+        imageData.data[y * width2 * 4 + x * 4 + colorOffset] = 255;
+    }
+}
+
+function drawWave(buffer) {
+    var imageData = ctx2.createImageData(width2, height2);
+    for (var x = 0; x < width2; x++) {
+        var j = x * 3;
+        verticalLine(imageData, x, buffer[j+1], 0);
+        verticalLine(imageData, x, buffer[j+0], 1);
+        verticalLine(imageData, x, buffer[j+2], 2);
+        verticalLine(imageData, x, 255, 3);
+    }
+    ctx2.putImageData(imageData, 0, 0);
+}
+
 
 // Run animation loop
 (function updateAnimationFrame() {
@@ -170,6 +200,7 @@ flash.buffers.push(white.buffer, black.buffer);
         buffer = frame[0],
         delay = frame[1];
     ctx.putImageData(buffer, 0, 0);
+    drawWave(animation.buffers[animation.frame]);
     setTimeout(updateAnimationFrame, delay);
 
     if (++animation.frame >= animation.frames.length) {
