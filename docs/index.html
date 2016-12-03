@@ -73,11 +73,11 @@ for (var t = 0; t < pulse.length; t++) {
 
     // Main neopixel strip
     var pr = Math.PI * t / pulse.length,
-        or = 0.009,
+        or = Math.PI / pixelsStrip,
         pg = -Math.PI * t / pulse.length,
-        og = 0.009,
+        og = Math.PI / pixelsStrip,
         pb = Math.PI * 4 * t / pulse.length,
-        ob = 0.005;
+        ob = Math.PI / pixelsStrip;
 
     for (var x = 0; x < pixelsStrip; x++) {
         setPixel(x,
@@ -239,7 +239,7 @@ function drawRings(buffer) {
         var j = (pixelsStrip + x) * 3,
             a = Math.PI * 2 * x / pixelsRing1,
             cx = Math.sin(a) * r1rad,
-            cy = Math.cos(a) * r1rad;
+            cy = -Math.cos(a) * r1rad;
 
         ctx3.fillStyle = 'rgb(' + buffer[j+1] + ',' + buffer[j+0] + ',' + buffer[j+2] + ')';
         ctx3.beginPath();
@@ -251,7 +251,7 @@ function drawRings(buffer) {
         var j = (pixelsStrip + pixelsRing1 + x) * 3,
             a = Math.PI * 2 * x / pixelsRing2,
             cx = Math.sin(a) * r2rad,
-            cy = Math.cos(a) * r2rad;
+            cy = -Math.cos(a) * r2rad;
 
         ctx3.fillStyle = 'rgb(' + buffer[j+1] + ',' + buffer[j+0] + ',' + buffer[j+2] + ')';
         ctx3.beginPath();
