@@ -59,11 +59,11 @@ for (var t = 0; t < pulse.length; t++) {
         img = imageData.data,
         buffer = new Uint8Array(pixelsTotal * 3);
 
-    var pr = t / 60,
+    var pr = Math.PI * t / pulse.length,
         or = 0.009,
-        pg = -t / 60,
+        pg = -Math.PI * t / pulse.length,
         og = 0.009,
-        pb = t / 15,
+        pb = Math.PI * 4 * t / pulse.length,
         ob = 0.005;
 
     for (var x = 0; x < pixelsStrip; x++) {
@@ -74,7 +74,7 @@ for (var t = 0; t < pulse.length; t++) {
         );
     }
 
-    var r1p = t / 15,
+    var r1p = Math.PI * 4 * t / pulse.length,
         r1 = Math.pow(Math.abs(Math.sin(r1p)), 4) * 255,
         r1c = [[1,0,0], [1,0,1], [0,0,1], [0,1,1]][ Math.floor(r1p / Math.PI % 4)];
 
@@ -82,7 +82,7 @@ for (var t = 0; t < pulse.length; t++) {
         setPixel(x, r1 * r1c[0], r1 * r1c[1], r1 * r1c[2]);
     }
 
-    var r2p = t / 15 + Math.PI / 2,
+    var r2p = Math.PI * 4 * t / pulse.length + Math.PI / 2,
         r2 = Math.pow(Math.abs(Math.sin(r2p)), 4) * 255,
         r2c = [[0,1,0], [1,1,0], [1,0,0], [1,1,1]][ Math.floor(r2p / Math.PI % 4)];
 
