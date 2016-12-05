@@ -7,7 +7,7 @@ var hw = process.binding('hw'),
     pixels = 299 + 24 + 12, // Number of neopixels connected
     debug = false;
 
-if (debug) console.log('Initializing, v.', 20161205.1237);
+if (debug) console.log('Initializing, v.', 20161205.1518);
 
 
 // Show status using build-in LED:s
@@ -58,23 +58,25 @@ var flash = {
 
 // Reading buffers from binary file.
 if (debug) console.log('Reading buffers from file');
-var fs = require('fs'),
-    file = fs.readFileSync('frames.data'),
-    offset = 0;
+var path = require('path'),
+    tm = process.binding('tm'),
+    pathname = path.resolve(process.cwd(), 'frames.data'),
+    file = tm.fs_open(pathname, tm.OPEN_EXISTING | tm.RDONLY)[0];
 
 function readFrames(frames) {
-    var length = file[offset++] * 256 + file[offset++];
+    var lengthBuffer = tm.fs_read(file, 2)[0],
+        length = lengthBuffer[0] * 256 + lengthBuffer[1];
     if (debug) console.log('Reading', length, 'frames');
     for (var i = 0; i < length; i++) {
-        var delay = file[offset++] * 256 + file[offset++],
-            end = offset + pixels * 3;
-        frames.push([file.slice(offset, end), delay]);
-        offset = end;
+        var delayBuffer = tm.fs_read(file, 2)[0],
+            delay = delayBuffer[0] * 256 + delayBuffer[1],
+            frameBuffer = tm.fs_read(file, pixels * 3)[0];
+        frames.push([frameBuffer, delay]);
     }
 }
 readFrames(pulse.frames);
 readFrames(flash.frames);
-file = null;
+tm.fs_close(file);
 
 
 // Run animation loop
