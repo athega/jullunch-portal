@@ -158,6 +158,9 @@ var red    = getBuffer([255, 0, 0]),
         flickerDuration: 60,
         flickerDelay: 60,
         flickerPause: 200,
+        play: function() {
+            animation = flash;
+        },
         done: function() {
             animation = pulse;
         }
@@ -282,8 +285,8 @@ function drawRings(buffer) {
 var eventSourceURL = 'https://jullunch-backend.athega.se/stream',
     eventSource = new EventSource(eventSourceURL);
 
-document.getElementById('flash').addEventListener('click', function(event) { animation = flash; });
-eventSource.addEventListener("jullunch.check-in", function(event) { animation = flash; });
+document.getElementById('flash').addEventListener('click', flash.play);
+eventSource.addEventListener("jullunch.check-in", flash.play);
 
 
 // Generate source code for buffers.

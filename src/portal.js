@@ -7,7 +7,7 @@ var hw = process.binding('hw'),
     pixels = 299 + 24 + 12, // Number of neopixels connected
     debug = false;
 
-if (debug) console.log('Initializing, v.', 20161202.1523);
+if (debug) console.log('Initializing, v.', 20161205.1237);
 
 
 // Show status using build-in LED:s
@@ -21,7 +21,6 @@ var pulse = {
         name: 'pulse',
         frames: [],
         frame: 0,
-        length: 188,
         done: function() {
             if (debug) console.log('Looping pulse');
             // Toggle build in LED:s to indicate status
@@ -38,7 +37,6 @@ var flash = {
         name: 'flash',
         frames: [],
         frame: 0,
-        length: 60,
         play: function(event) {
             if (debug) console.log('Flash!');
             // Toggle build in LED:s to indicate status
@@ -64,16 +62,19 @@ var fs = require('fs'),
     file = fs.readFileSync('frames.data'),
     offset = 0;
 
-function readFrames(frames, count) {
-    for (var i = 0; i < count; i++) {
+function readFrames(frames) {
+    var length = file[offset++] * 256 + file[offset++];
+    if (debug) console.log('Reading', length, 'frames');
+    for (var i = 0; i < length; i++) {
         var delay = file[offset++] * 256 + file[offset++],
             end = offset + pixels * 3;
         frames.push([file.slice(offset, end), delay]);
         offset = end;
     }
 }
-readFrames(pulse.frames, pulse.length);
-readFrames(flash.frames, flash.length);
+readFrames(pulse.frames);
+readFrames(flash.frames);
+file = null;
 
 
 // Run animation loop
@@ -99,7 +100,9 @@ if (debug) console.log('Running...');
 // Trigger flash on config button press.
 tessel.button.on('press', flash.play);
 
-// Trigger flash on check in event.
-var eventSource = new EventSource(eventURL, { rejectUnauthorized: false });
-eventSource.addEventListener(eventName, flash.play);
-if (debug) console.log('Listening to "'+ eventName + '" from ' + eventURL);
+// Trigger flash on check-in event if enabled.
+if (global.EventSource) {
+    var eventSource = new EventSource(eventURL, { rejectUnauthorized: false });
+    eventSource.addEventListener(eventName, flash.play);
+    if (debug) console.log('Listening to "'+ eventName + '" from ' + eventURL);
+}
