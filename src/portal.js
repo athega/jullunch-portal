@@ -1,13 +1,10 @@
 var hw = process.binding('hw'),
-    EventSource = require('eventsource'),
+    buttonLib = require('tessel-gpio-button'),
     tessel = require('tessel'),
-    eventURL = 'http://10.0.0.74/stream', // Use HTTP for testing, there might be a problem with using HTTPS.
-//    eventURL = 'https://jullunch-backend.athega.se/stream',
-    eventName = 'jullunch.check-in',
     pixels = 299 + 24 + 12, // Number of neopixels connected
     debug = false;
 
-if (debug) console.log('Initializing, v.', 20161205.1518);
+if (debug) console.log('Initializing, v.', 20161206.1403);
 
 
 // Show status using build-in LED:s
@@ -99,12 +96,7 @@ tm.fs_close(file);
 if (debug) console.log('Running...');
 
 
-// Trigger flash on config button press.
+// Trigger flash on config button or external button press.
+var button = buttonLib.use(tessel.port['GPIO'].pin['G3']);
 tessel.button.on('press', flash.play);
-
-// Trigger flash on check-in event if enabled.
-if (global.EventSource) {
-    var eventSource = new EventSource(eventURL, { rejectUnauthorized: false });
-    eventSource.addEventListener(eventName, flash.play);
-    if (debug) console.log('Listening to "'+ eventName + '" from ' + eventURL);
-}
+button.on('press', flash.play);

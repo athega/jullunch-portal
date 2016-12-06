@@ -1,5 +1,5 @@
 {
   "dependencies": {
-    "eventsource": "^0.2.1"
+    "tessel-gpio-button": "^1.1.1"
   }
 }
