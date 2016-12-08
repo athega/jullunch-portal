@@ -18,7 +18,7 @@
                 height: 256px;
                 float: right;
             }
-            button {
+            select, button {
                 font-size: 1.2em;
                 margin: 1em 0;
             }
@@ -35,6 +35,14 @@
     <canvas id="canvas1"></canvas>
     <canvas id="canvas2"></canvas>
     <canvas id="canvas3"></canvas>
+    <audio id="portal1" src="portal1.mp3"></audio>
+    <audio id="portal2" src="portal2.mp3"></audio>
+    <audio id="portal3" src="portal3.mp3"></audio>
+    <select id="sound">
+        <option>portal1</option>
+        <option>portal2</option>
+        <option>portal3</option>
+    </select>
     <button id="flash">Flash!</button>
     <textarea id="output" readonly></textarea>
 <script>
@@ -160,6 +168,10 @@ var red    = getBuffer([255, 0, 0]),
         flickerPause: 200,
         play: function() {
             animation = flash;
+
+            var select = document.getElementById('sound'),
+                audio  = document.getElementById(select.options[select.selectedIndex].value);
+            audio.play();
         },
         done: function() {
             animation = pulse;
